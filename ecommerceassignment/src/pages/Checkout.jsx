@@ -3,7 +3,7 @@ import { Footer, Navbar } from "../components";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 const Checkout = () => {
-const state = useSelector((state) => state.handleCart);
+  const state = useSelector((state) => state.handleCart);
 
 
   const EmptyCart = () => {
@@ -23,12 +23,28 @@ const state = useSelector((state) => state.handleCart);
   };
 
   const ShowCheckout = () => {
+
+    const storeOrderDetails = () => {
+      let order = parseInt(sessionStorage.getItem("NumberofOrders"));
+      if (!order) {
+        sessionStorage.setItem("NumberofOrders", 1)
+      } else {
+        sessionStorage.setItem("NumberofOrders", order + 1)
+      }
+    }
     let subtotal = 0;
     let shipping = 30.0;
     let totalItems = 0;
+    let discountamt = 0;
+    let orders = parseInt(sessionStorage.getItem("NumberofOrders"));
+
     state.map((item) => {
       return (subtotal += item.price * item.qty);
     });
+
+    if (orders % 5 === 0) {
+      discountamt = Math.floor((subtotal * 10) / 100);
+    }
 
     state.map((item) => {
       return (totalItems += item.qty);
@@ -37,6 +53,11 @@ const state = useSelector((state) => state.handleCart);
       <>
         <div className="container py-5">
           <div className="row my-4">
+            {(orders % 5 === 0 ?
+              <div className="row d-flex justify-content-center my-4">
+                <h5 className="mb-0">Hurry!!! You get 10% discount on this order</h5>
+              </div>
+              : "")}
             <div className="col-md-5 col-lg-4 order-md-last">
               <div className="card mb-4">
                 <div className="card-header py-3 bg-light">
@@ -51,12 +72,16 @@ const state = useSelector((state) => state.handleCart);
                       Shipping
                       <span>${shipping}</span>
                     </li>
+                    <li className="list-group-item d-flex justify-content-between align-items-center px-0">
+                      Discount
+                      <span>${discountamt}</span>
+                    </li>
                     <li className="list-group-item d-flex justify-content-between align-items-center border-0 px-0 mb-3">
                       <div>
                         <strong>Total amount</strong>
                       </div>
                       <span>
-                        <strong>${Math.round(subtotal + shipping)}</strong>
+                        <strong>${Math.round(subtotal + shipping - discountamt)}</strong>
                       </span>
                     </li>
                   </ul>
@@ -69,7 +94,7 @@ const state = useSelector((state) => state.handleCart);
                   <h4 className="mb-0">Billing address</h4>
                 </div>
                 <div className="card-body">
-                  <form className="needs-validation">
+                  <form className="needs-validation" onSubmit={storeOrderDetails}>
                     <div className="row g-3">
                       <div className="col-sm-6 my-1">
                         <label for="firstName" className="form-label">
@@ -274,7 +299,7 @@ const state = useSelector((state) => state.handleCart);
 
                     <button
                       className="w-100 btn btn-primary "
-                      type="submit" 
+                      type="submit"
                     >
                       Continue to checkout
                     </button>
